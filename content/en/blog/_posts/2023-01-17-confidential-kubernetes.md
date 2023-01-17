@@ -7,9 +7,6 @@ slug: "confidential-kubernetes"
 
 **Authors:** Fabian Kammel (Edgeless Systems), (more to add...)
 
-
-# Confidential Kubernetes: Use Confidential Virtual Machines and Enclaves to improve your cluster security.
-
 In this blog post, we will introduce the concept of Confidential Computing (CC) to improve the security and privacy properties of any computing environment. Further, we will show how the Cloud-Native ecosystem, and Kubernetes in particular, can benefit from the new compute paradigm.
 
 ## Intro
@@ -20,7 +17,7 @@ The [Whitepaper](https://confidentialcomputing.io/wp-content/uploads/sites/85/20
 
 Confidential computing aims to primarily solve the problem of **protecting data in use** by introducing a Trusted Execution Environment (TEE).
 
-## Trusted Execution Environments
+### Trusted Execution Environments
 
 For more than a decade, Trusted Execution Environments (TEEs) have been available in commercial computing hardware, in the form of [Hardware Security Modules (HSMs)](https://en.wikipedia.org/wiki/Hardware_security_module) and [Trusted Platform Modules (TPMs)](https://www.iso.org/standard/50970.html). These technologies provide trusted environments for shielded computations. They are used to store highly sensitive cryptographic keys and carry out operations such as signing and encrypting data.
 
@@ -111,11 +108,11 @@ Fully (also partially and somewhat) homomorphic encryption allows one to perform
 
 Zero Knowledge Proofs or Protocols are a privacy-preserving technique (PPT) that allows one party to prove facts about their data without revealing anything else about the data. ZKP can be used instead of or in addition to confidential computing to protect the privacy of the involved parties and their data. Similarly, Multi-Party Computation enables multiple parties to work together on a computation, i.e, each party provides their data to the result, without leaking their data to any of the other parties.
 
-# Use Cases of Confidential Computing
+## Use Cases of Confidential Computing
 
 The presented confidential computing platforms show that both the isolation of a single process and therefore minimization of the trusted computing base, and the isolation of a full virtual machine are possible. This already enabled a lot of interesting and secure projects to emerge:
 
-## Confidential Containers
+### Confidential Containers
 
 The [Confidential Containers project](https://github.com/confidential-containers) enables users to run a container inside a confidential context. It provides an abstraction layer so that users do not need to interface directly with the confidential computing hardware.
 
@@ -123,7 +120,7 @@ Confidential Containers is a [CNCF sandbox project](https://www.redhat.com/en/bl
 
 > TODO: @Tobin/Mikko (or other CoCo folks) can you expand on this chapter?
 
-## Managed Confidential Kubernetes
+### Managed Confidential Kubernetes
 
 [Azure](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-node-pool-aks) and [GCP](https://cloud.google.com/blog/products/identity-security/announcing-general-availability-of-confidential-gke-nodes) both support the use of confidential virtual machines as worker nodes for their managed Kubernetes offerings.
 
@@ -131,13 +128,13 @@ Both services aim for better workload protection and security guarantees by enab
 
 Azure also enables [Confidential Containers](https://github.com/confidential-containers) in their managed Kubernetes offering. They support the creation based on [Intel SGX enclaves](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-containers-enclaves) and [AMD SEV-based VMs](https://techcommunity.microsoft.com/t5/azure-confidential-computing/microsoft-introduces-preview-of-confidential-containers-on-azure/ba-p/3410394).
 
-## Constellation
+### Constellation
 
 [Constellation is a Kubernetes engine](https://github.com/edgelesssys/constellation) that aims to provide the best possible data security. It wraps your entire Kubernetes cluster into a single confidential context that is shielded from the underlying cloud infrastructure. Everything inside is always encrypted, including at runtime in memory. It shields both the worker and control plane nodes. In addition, it already integrates with popular CNCF software such as Cilium for secure networking and provides extended CSI drivers to write data securely.
 
 > TODO: Please add any interesting open-source projects in the space we should highlight!
 
-# Where are we today? Vendors, Limitations, and FOSS landscape
+## Where are we today? Vendors, Limitations, and FOSS landscape
 
 As we have seen in the previous sections confidential computing is a powerful new concept to improve security, but we are still in the (early) adoption phase. New products are starting to emerge to take advantage of the new properties.
 
@@ -145,7 +142,7 @@ Google and Microsoft are the first major cloud providers to have confidential of
 
 At the same time using these new technologies provides us with new opportunities to bring even the most sensitive workloads into the cloud. This enables them to leverage all the tools in the CNCF landscape.
 
-# Call to action
+## Call to action
 
 If you are currently working on a high-security product that struggles to run in the public cloud due to legal requirements or are looking to bring the privacy and security of your cloud-native project to the next level: Reach out to all the great projects we have highlighted! Everyone is keen to improve security of our ecosystem and you can play a vital role in that journey.
 
