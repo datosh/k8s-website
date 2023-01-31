@@ -15,8 +15,8 @@ Confidential Computing is not a new concept in the cloud-native world. The
 [Confidential Computing Consortium](https://confidentialcomputing.io/) is a Linux Foundation
 that already worked on
 [Defining and Enabling Confidential Computing](https://confidentialcomputing.io/wp-content/uploads/sites/85/2019/12/CCC_Overview.pdf).
-In the [Whitepaper](https://confidentialcomputing.io/wp-content/uploads/sites/85/2022/11/CCC-A-Technical-Analysis-of-Confidential-Computing-v1.2_updated_2022-11-02.pdf)
-they provide a great motivation for the usage of Confidential Computing:
+In the [Whitepaper](https://confidentialcomputing.io/wp-content/uploads/sites/85/2023/01/CCC-A-Technical-Analysis-of-Confidential-Computing-v1.3_Updated_November_2022.pdf)
+they provide a great motivation for the use of Confidential Computing:
 
    > Data exists in three states: in transit, at rest, and in use. [...] Protecting sensitive data
    > in all of its states is more critical than ever. Cryptography is now commonly deployed
@@ -25,7 +25,7 @@ they provide a great motivation for the usage of Confidential Computing:
    > and at rest are now commonly deployed, the third state - protecting data in use - is the new frontier.
 
 Confidential Computing aims to primarily solve the problem of **protecting data in use**
-by introducing a Trusted Execution Environment (TEE).
+by introducing a hardware enforced Trusted Execution Environment (TEE).
 
 ## Trusted Execution Environments
 
@@ -60,14 +60,14 @@ Additionally, we should mention
 [ARM TrustZone](https://www.arm.com/technologies/trustzone-for-cortex-a) which is optimized
 for embedded devices such as smartphones, tablets, and smart TVs, as well as
 [AWS Nitro Enclaves](https://aws.amazon.com/ec2/nitro/nitro-enclaves/) which are only available
-on [Amazon Web Services](https://aws.amazon.com/) and have a different attacker model compared
+on [Amazon Web Services](https://aws.amazon.com/) and have a different threat model compared
 to the CPU-based solutions by Intel and AMD.
 
 ### Security properties and feature set
 
 In the following, we will review the security properties and additional features these
 new technologies bring to the table. Not all solutions will provide all properties, and
-we will discuss each technology in further detail in their respective chapter.
+we will discuss each technology in further detail in their respective section.
 
 The **Confidentiality** property ensures that information cannot be viewed while it is
 in use in the TEE. This provides us with the highly desired feature to secure
@@ -81,9 +81,9 @@ tampered with while running critical computations.
 
 *Availability* is the third basic property often discussed in the context of information
 security. This property is outside the scope of most TEEs. Usually, they can be controlled
-(shut down, restarted, …) by some higher-level concept. This could be the CPU itself, a
-hypervisor, or a kernel. This is to preserve the availability of the overall system, and
-not the TEE itself. When running in the cloud the availability is usually guaranteed by
+(shut down, restarted, …) by some higher level abstraction. This could be the CPU itself, the
+hypervisor, or the kernel. This is to preserve the availability of the overall system, and
+not the TEE itself. When running in the cloud availability is usually guaranteed by
 the cloud provider in terms of Service Level Agreements (SLAs) and is not cryptographically enforceable.
 
 Confidentiality and Integrity by themselves would only be helpful in some cases. For example,
@@ -94,7 +94,7 @@ the identity, confidentiality, and integrity of TEEs based on cryptographic cert
 from the hardware itself. This feature can also be made available to clients outside of the
 confidential computing hardware in the form of remote attestation.
 
-TEEs can hold and process information that needs to persist even beyond their lifespan. That
+TEEs can hold and process information that predates or outlives the trusted environment. That
 could mean across restarts, different versions, or platform migrations. Therefore **Recoverability**
 is an important feature. Data and the state of a TEE need to be sealed before they are written
 to persistent storage to maintain confidentiality and integrity guarantees. The access to such
@@ -103,13 +103,13 @@ Hence, making sure the recovery can only happen in the same confidential context
 
 This does not have to limit the flexibility of the overall system. The
 [migration agent (MA) of AMD SEV-SNP](https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf)
-allows users to migrate a confidential virtual machine to a different host system. All
-the while keeping the security properties of the TEE intact.
+allows users to migrate a confidential virtual machine to a different host system
+while keeping the security properties of the TEE intact.
 
 ## Feature comparison
 
 In the following, we will dive a little bit deeper into the specific implementations,
-compare supported features and analyze the security properties.
+compare supported features and analyze their security properties.
 
 ### AMD SEV
 
@@ -177,14 +177,9 @@ about SGX on multi-socket platforms can be found in the
 A [list of supported platforms](https://ark.intel.com/content/www/us/en/ark/search/featurefilter.html?productType=873&2_SoftwareGuardExtensions=Yes%20with%20both%20Intel%C2%AE%20SPS%20and%20Intel%C2%AE%20ME)
 is available from Intel.
 
-However, there are still several security limitations faced by SGX. Such as Cache
-timing attacks, physical attacks, untrusted I/O, or malicious microcode patching.
-
-[Several SGX-specific attacks](https://arxiv.org/pdf/2006.13598.pdf) were published.
-Among others [Prime+Probe](https://gruss.cc/files/malware_guard_extension.pdf) and
-[SGAxe](https://sgaxe.com/files/SGAxe.pdf).
-
-> TODO: Should we mention attacks? If we do, we should also mention attacks on all technologies. Do we have a stance / recommendation here or do we provide the information and let the reader decide?
+However, there are security limitations, such as cache timing attacks, physical attacks,
+untrusted I/O, or malicious microcode patching. Each project has different security requirements
+and needs to decide, if the added security of SGX and its limitations, are sufficient.
 
 SGX is available on
 [Azure](https://azure.microsoft.com/de-de/updates/intel-sgx-based-confidential-computing-vms-now-available-on-azure-dedicated-hosts/),
@@ -195,9 +190,9 @@ SGX is available on
 
 Where Intel SGX aims to protect the context of a single process,
 [Intel's Trusted Domain Extensions](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html)
-protects a full virtual machine and is therefore most closely comparable to AMD SEV.
+protect a full virtual machine and are therefore most closely comparable to AMD SEV.
 
-As with SEV-SNP support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
+As with SEV-SNP, support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
 but hardware support will land with [Saphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) in early 2023.
 
 ## Overhead analysis
@@ -205,7 +200,7 @@ but hardware support will land with [Saphire Rapids](https://en.wikipedia.org/wi
 The benefits that Confidential Computing technologies provide via strong isolation and enhanced
 security to customer data and workloads are not for free. Quantifying this impact isn't easy and
 depends on many factors: The TEE technology, the benchmark, the metrics, and the type of workload
-have a huge impact on the induced performance overhead.
+all have a huge impact on the expected performance overhead.
 
 Intel SGX-based TEEs are hard to benchmark as [shown](https://arxiv.org/pdf/2205.06415.pdf)
 [by](https://www.ibr.cs.tu-bs.de/users/mahhouk/papers/eurosec2021.pdf)
@@ -249,13 +244,21 @@ projects to emerge:
 
 ### Confidential Containers
 
-The [Confidential Containers project](https://github.com/confidential-containers) enables users
-to run a container inside a confidential context. It provides an abstraction layer so that
-users do not need to interface directly with the Confidential Computing hardware.
-
+The [Confidential Containers](https://github.com/confidential-containers) (CoCo) project enables users
+to run a container inside a confidential context.
 [Confidential Containers](https://www.cncf.io/projects/confidential-containers/) is a CNCF sandbox project.
 
-> TODO: @Tobin/Mikko (or other CoCo folks) can you expand on this chapter?
+CoCo offers an extension to Kubernetes clusters that are comprised of bare metal
+nodes that support TEEs, to launch containerized workloads within a TEE created
+on the fly. The CoCo container runtime first launches a TEE, then demonstrates
+its validity, followed by verifying the container image signature and seeking any
+decryption keys to launch the container. Note the entire image handling occurs
+within a TEE. Coco's near term goals are to include non-bare metal Kubernetes
+clusters and further separate management and tenant APIs to restrict the
+Kubernetes cluster admin access to the tenant pods and the containers within.
+CoCo currently supports both AMD and Intel TEE solutions. It is defining both
+a generic Key Broker and Attestation service to support an end-to-end confidential
+flow.
 
 ### Managed confidential Kubernetes
 
@@ -286,16 +289,16 @@ secure networking and provides extended CSI drivers to write data securely.
 
 ## Where are we today? Vendors, limitations, and FOSS landscape
 
-As we have seen in the previous sections Confidential Computing is a powerful new concept
+As we have seen in the previous sections, Confidential Computing is a powerful new concept
 to improve security, but we are still in the (early) adoption phase. New products are
-starting to emerge to take advantage of the new properties.
+starting to emerge to take advantage of the unique properties.
 
 Google and Microsoft are the first major cloud providers to have confidential offerings.
-Still, these offerings are limited to compute and end-to-end solutions for confidential
+Still, these offerings are limited to compute, while end-to-end solutions for confidential
 databases, cluster networking, and load balancers have to be self-managed.
 
-At the same time using these new technologies provides us with new opportunities to bring
-even the most sensitive workloads into the cloud. This enables them to leverage all the
+These technologies provide opportunities to bring even the most
+sensitive workloads into the cloud and enables them to leverage all the
 tools in the CNCF landscape.
 
 ## Call to action
