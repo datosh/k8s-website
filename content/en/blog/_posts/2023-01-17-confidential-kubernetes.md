@@ -192,7 +192,7 @@ Where Intel SGX aims to protect the context of a single process,
 [Intel's Trusted Domain Extensions](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html)
 protect a full virtual machine and are therefore most closely comparable to AMD SEV.
 
-As with SEV-SNP, support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
+As with SEV-SNP, guest support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
 but hardware support will land with [Saphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) in early 2023.
 
 ## Overhead analysis
