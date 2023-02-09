@@ -198,7 +198,11 @@ Where Intel SGX aims to protect the context of a single process,
 protect a full virtual machine and are therefore most closely comparable to AMD SEV.
 
 As with SEV-SNP, guest support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
-but hardware support will land with [Sapphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) during 2023: [Alibaba Cloud provides invitational preview instances](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-a-tdx-confidential-computing-environment) and also [Azure has announced its early access plans](https://azure.microsoft.com/en-us/blog/azure-confidential-computing-on-4th-gen-intel-xeon-scalable-processors-with-intel-tdx/).
+but hardware support will land with [Sapphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) during 2023:
+[Alibaba Cloud provides](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-a-tdx-confidential-computing-environment)
+invitational preview instances and also
+[Azure has announced](https://azure.microsoft.com/en-us/blog/azure-confidential-computing-on-4th-gen-intel-xeon-scalable-processors-with-intel-tdx/)
+its early access plans.
 
 ## Overhead analysis
 
