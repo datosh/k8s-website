@@ -158,7 +158,7 @@ Intel's
 [Software Guard Extensions](https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/overview.html)
 has been available since 2015, and were introduced with the Skylake architecture.
 
-SGX is a new instruction set that enables users to create a protected and isolated process called
+SGX is an instruction set that enables users to create a protected and isolated process called
 an *enclave*. It provides a reverse sandbox that protects enclaves from the operating system,
 firmware, and any other privileged execution context.
 
@@ -169,7 +169,7 @@ Tapping the memory or connecting the DRAM modules to another system will yield o
 data. The memory encryption key randomly changes every power cycle. The key is stored
 within the CPU and is not accessible.
 
-The 3rd generation Xeon CPUs (aka Ice Lake Server - "ICX") did switch to using a technology called
+The 3rd generation Xeon CPUs (aka Ice Lake Server - "ICX") and later did switch to using a technology called
 [Total Memory Encryption - Multi-Key](https://www.intel.com/content/www/us/en/developer/articles/news/runtime-encryption-of-memory-with-intel-tme-mk.html)
 (TME-MK) that uses AES-XTS, moving away from the
 [Memory Encryption Engine](https://eprint.iacr.org/2016/204.pdf)
@@ -198,7 +198,7 @@ Where Intel SGX aims to protect the context of a single process,
 protect a full virtual machine and are therefore most closely comparable to AMD SEV.
 
 As with SEV-SNP, guest support for TDX was [merged in Linux Kernel 5.19](https://www.phoronix.com/news/Intel-TDX-For-Linux-5.19),
-but hardware support will land with [Saphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) in early 2023.
+but hardware support will land with [Sapphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) during 2023: [Alibaba Cloud provides invitational preview instances](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-a-tdx-confidential-computing-environment) and also [Azure has announced its early access plans](https://azure.microsoft.com/en-us/blog/azure-confidential-computing-on-4th-gen-intel-xeon-scalable-processors-with-intel-tdx/).
 
 ## Overhead analysis
 
@@ -242,7 +242,7 @@ their data to the result, without leaking their data to any of the other parties
 
 ## Use cases of Confidential Computing
 
-The presented Confidential Computing platforms show that both the isolation of a single
+The presented Confidential Computing platforms show that both the isolation of a single container
 process and therefore minimization of the trusted computing base, and the isolation of a
 full virtual machine are possible. This already enabled a lot of interesting and secure
 projects to emerge:
@@ -250,15 +250,14 @@ projects to emerge:
 ### Confidential Containers
 
 The [Confidential Containers](https://github.com/confidential-containers) (CoCo) project enables users
-to run a container inside a confidential context.
+to process and run each container of a pod inside a confidential context.
 [Confidential Containers](https://www.cncf.io/projects/confidential-containers/) is a CNCF sandbox project.
 
-CoCo offers an extension to Kubernetes clusters that are comprised of bare metal
+CoCo offers an extension to Kubernetes clusters that are comprised of
 nodes that support TEEs, to launch containerized workloads within a TEE created
-on the fly. The CoCo container runtime first launches a TEE, then demonstrates
-its validity, followed by verifying the container image signature and seeking any
-decryption keys to launch the container. Note the entire image handling occurs
-within a TEE. Coco's near term goals are to include non-bare metal Kubernetes
+on the fly. With CoCo, the entire lifecycle of a pod, including the image handling occurs
+within a TEE leaving the cluster node outside of the TCB: for each pod, a TEE is launched, followed by the verification of the container images' signatures before pull and seeking any
+decryption keys to launch the container. The image policy and layer decryption keys a obtained from a trusted *key broker service* that involves a TEE remote attestation as part of the process. Coco's near term goals are to move to CSPs' Kubernetes
 clusters and further separate management and tenant APIs to restrict the
 Kubernetes cluster admin access to the tenant pods and the containers within.
 CoCo currently supports both AMD and Intel TEE solutions. It is defining both
