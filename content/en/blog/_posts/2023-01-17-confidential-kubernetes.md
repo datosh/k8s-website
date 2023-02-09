@@ -63,6 +63,11 @@ for embedded devices such as smartphones, tablets, and smart TVs, as well as
 on [Amazon Web Services](https://aws.amazon.com/) and have a different threat model compared
 to the CPU-based solutions by Intel and AMD.
 
+[IBM Secure Execution for Linux](https://www.ibm.com/docs/en/linux-on-systems?topic=virtualization-secure-execution)
+lets you run your Kubernetes cluster's nodes as KVM guests within a trusted execution environment on
+IBM Z series hardware. You can use this hardware-enhanced virtual machine isolation to
+provide strong isolation between tenants in a cluster, with hardware attestation about the (virtual) node's integrity.
+
 ### Security properties and feature set
 
 In the following, we will review the security properties and additional features these
@@ -174,7 +179,7 @@ that the consumer and Xeon E CPUs used. This increased the possible
 about SGX on multi-socket platforms can be found in the
 [Whitepaper](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/supporting-intel-sgx-on-mulit-socket-platforms.pdf)
 
-A [list of supported platforms](https://ark.intel.com/content/www/us/en/ark/search/featurefilter.html?productType=873&2_SoftwareGuardExtensions=Yes%20with%20both%20Intel%C2%AE%20SPS%20and%20Intel%C2%AE%20ME)
+A [list of supported platforms](https://ark.intel.com/content/www/us/en/ark/search/featurefilter.html?productType=873)
 is available from Intel.
 
 However, there are security limitations, such as cache timing attacks, physical attacks,
@@ -183,7 +188,7 @@ and needs to decide, if the added security of SGX and its limitations, are suffi
 
 SGX is available on
 [Azure](https://azure.microsoft.com/de-de/updates/intel-sgx-based-confidential-computing-vms-now-available-on-azure-dedicated-hosts/),
-[Alibaba Cloud](https://azure.microsoft.com/de-de/updates/intel-sgx-based-confidential-computing-vms-now-available-on-azure-dedicated-hosts/),
+[Alibaba Cloud](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-an-sgx-encrypted-computing-environment),
 [IBM](https://cloud.ibm.com/docs/bare-metal?topic=bare-metal-bm-server-provision-sgx), and many more.
 
 ### Intel TDX
@@ -271,7 +276,8 @@ for container workloads. However, they don't seek to fully isolate the cluster o
 the service provider or infrastructure. Specifically, they don't offer a dedicated confidential control
 plane or expose attestation capabilities for the confidential cluster/nodes.
 
-Azure also enables [Confidential Containers](https://github.com/confidential-containers)
+Azure also enables
+[Confidential Containers](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-aks-overview)
 in their managed Kubernetes offering. They support the creation based on
 [Intel SGX enclaves](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-containers-enclaves)
 and [AMD SEV-based VMs](https://techcommunity.microsoft.com/t5/azure-confidential-computing/microsoft-introduces-preview-of-confidential-containers-on-azure/ba-p/3410394).
