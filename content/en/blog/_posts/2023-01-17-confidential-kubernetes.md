@@ -5,7 +5,7 @@ date: 2023-01-17
 slug: "confidential-kubernetes"
 ---
 
-**Authors:** Fabian Kammel (Edgeless Systems), (more to add...)
+**Authors:** Fabian Kammel (Edgeless Systems), Mikko Ylinen (Intel), Tobin Feldman-Fitzthum (IBM)
 
 In this blog post, we will introduce the concept of Confidential Computing (CC) to improve
 the security and privacy properties of any computing environment. Further, we will show how
@@ -127,11 +127,12 @@ AMD's [Secure Encrypted Virtualization (SEV)](https://developer.amd.com/sev/) te
 are a set of features to enhance the security of virtual machines on AMD's server CPUs. SEV
 transparently encrypts the memory of each VM with a unique key. SEV can also calculate a
 signature of the memory contents, which can be sent to the VM's owner as an attestation that
-the memory was encrypted correctly by the firmware.
+the inital guest memory was not manipulated.
 
 The second generation of SEV, known as
 [Encrypted State](https://www.amd.com/system/files/TechDocs/Protecting%20VM%20Register%20State%20with%20SEV-ES.pdf)
-or SEV-ES provides additional protection from the hypervisor by encrypting all CPU register contents when a VM stops running.
+or SEV-ES provides additional protection from the hypervisor by encrypting all
+CPU register contents when a context switch occurs.
 
 The third generation of SEV,
 [Secure Nested Paging](https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf)
@@ -146,12 +147,8 @@ AMD SEV has been implemented incrementally. New features and improvements have b
 each new CPU generation. The Linux community makes these features available as part of the KVM hypervisor,
 and for host and guest kernels. The first SEV features were discussed and implemented in 2016 - see
 [AMD x86 Memory Encryption Technologies](https://www.usenix.org/conference/usenixsecurity16/technical-sessions/presentation/kaplan)
-from the 2016 Usenix Security Symposium.
-
-After that, the SEV-ES feature set was implemented in
-[2020](https://www.phoronix.com/news/AMD-SEV-ES-Linux-2020-Patches). Recently, the latest feature set
-was [merged in Linux 5.19 in July 2022](https://www.phoronix.com/news/AMD-SEV-SNP-Arrives-Linux-5.19)
-and enabled support for SEV-SNP.
+from the 2016 Usenix Security Symposium. The latest big addition was
+[SEV-SNP guest support in Linux 5.19](https://www.phoronix.com/news/AMD-SEV-SNP-Arrives-Linux-5.19).
 
 [Confidential VMs based on AMD SEV-SNP](https://azure.microsoft.com/en-us/updates/azureconfidentialvm/)
 are available in Microsoft Azure since July 2022. Similarly, Google Cloud Platform (GCP) offers
@@ -267,20 +264,25 @@ projects to emerge:
 
 ### Confidential Containers
 
-The [Confidential Containers](https://github.com/confidential-containers) (CoCo) project enables users
-to process and run each container of a pod inside a confidential context.
-[Confidential Containers](https://www.cncf.io/projects/confidential-containers/) is a CNCF sandbox project.
+[Confidential Containers](https://github.com/confidential-containers) (CoCo) is a
+CNCF sandbox project that isolates Kubernetes pods inside of confidential virtual machines.
 
-CoCo offers an extension to Kubernetes clusters that are comprised of
-nodes that support TEEs, to launch containerized workloads within a TEE created
-on the fly. With CoCo, the entire lifecycle of a pod, including the image handling occurs
-within a TEE leaving the cluster node outside of the TCB: for each pod, a TEE is launched, followed by the verification of the container images' signatures before pull and seeking any
-decryption keys to launch the container. The image policy and layer decryption keys a obtained from a trusted *key broker service* that involves a TEE remote attestation as part of the process. Coco's near term goals are to move to CSPs' Kubernetes
-clusters and further separate management and tenant APIs to restrict the
-Kubernetes cluster admin access to the tenant pods and the containers within.
-CoCo currently supports both AMD and Intel TEE solutions. It is defining both
-a generic Key Broker and Attestation service to support an end-to-end confidential
-flow.
+CoCo can be installed on a Kubernetes cluster with an operator.
+The operator will create a set of runtime classes that can be used to deploy
+pods inside an enclave on several different platforms, including
+AMD SEV, Intel TDX, Secure Execution for IBM Z, and Intel SGX.
+
+CoCo is typically used with signed and/or encrypted container images
+which are pulled, verified, and decrypted inside the enclave.
+Secrets, such as image decryption keys, are conditionally provisioned
+to the enclave by a trusted Key Broker Service that validates the
+hardware evidence of the TEE prior to releasing any sensitive information.
+
+CoCo has several deployment models. Since the Kubernetes control plane
+is outside the TCB, CoCo is suitable for managed environments. CoCo can
+be run in virtual environments that don't support nesting with the help of an
+API adaptor that starts pod VMs in the cloud. CoCo can also be run on
+bare metal, providing strong isolation even in multi-tenant environments.
 
 ### Managed confidential Kubernetes
 
@@ -317,8 +319,6 @@ also exist. With these libOS projects existing containerized applications can be
 easily converted into confidential computing enabled containers. Many curated prebuilt
 are also available.
 
-> TODO: Please add any interesting open-source projects in the space we should highlight!
-
 ## Where are we today? Vendors, limitations, and FOSS landscape
 
 As we have seen in the previous sections, Confidential Computing is a powerful new concept
@@ -343,5 +343,6 @@ play a vital role in that journey.
 
 * [Confidential Containers](https://github.com/confidential-containers)
 * [Constellation: Always Encrypted Kubernetes](https://github.com/edgelesssys/constellation)
-
-> TODO: Do we have a full list of CNCF-related CC projects? We should link to their GitHub to encourage adoption and contributions.
+* [Occlum](https://occlum.io/)
+* [Gramine](https://gramineproject.io/)
+* CCC also maintains a [list of projects](https://confidentialcomputing.io/projects/)
