@@ -12,7 +12,7 @@ the security and privacy properties of any computing environment. Further, we wi
 the Cloud-Native ecosystem, and Kubernetes in particular, can benefit from the new compute paradigm.
 
 Confidential Computing is not a new concept in the cloud-native world. The
-[Confidential Computing Consortium](https://confidentialcomputing.io/) is a Linux Foundation
+[Confidential Computing Consortium](https://confidentialcomputing.io/) (CCC) is a Linux Foundation
 that already worked on
 [Defining and Enabling Confidential Computing](https://confidentialcomputing.io/wp-content/uploads/sites/85/2019/12/CCC_Overview.pdf).
 In the [Whitepaper](https://confidentialcomputing.io/wp-content/uploads/sites/85/2023/01/CCC-A-Technical-Analysis-of-Confidential-Computing-v1.3_Updated_November_2022.pdf)
@@ -77,15 +77,20 @@ we will discuss each technology in further detail in their respective section.
 The **Confidentiality** property ensures that information cannot be viewed while it is
 in use in the TEE. This provides us with the highly desired feature to secure
 **data in use**. Depending on the specific TEE used, both code and data may be protected
-from outside viewers.
+from outside viewers. The differences in TEE architectures and how they are being used
+in a cloud native context are important considerations when designing end to end security
+for sensitive workloads with minimal **Trusted Computing Base** (TCB) in mind. CCC has recently
+worked on a [common vocabulary and supporting material](https://confidentialcomputing.io/wp-content/uploads/sites/85/2023/01/Common-Terminology-for-Confidential-Computing.pdf)
+that helps to explain where confidentiality boundaries are drawn with the different TEE
+architectures and how that impacts the TCB size.
 
 Confidentiality is a great feature, but an attacker would still be able to manipulate
 or inject arbitrary code and data for the TEE to execute and therefore easily leak critical
 information. **Integrity** guarantees a TEE owner that neither code nor data can be
 tampered with while running critical computations.
 
-*Availability* is the third basic property often discussed in the context of information
-security. This property is outside the scope of most TEEs. Usually, they can be controlled
+**Availability** is a basic property often discussed in the context of information
+security. However, this property is outside the scope of most TEEs. Usually, they can be controlled
 (shut down, restarted, …) by some higher level abstraction. This could be the CPU itself, the
 hypervisor, or the kernel. This is to preserve the availability of the overall system, and
 not the TEE itself. When running in the cloud availability is usually guaranteed by
