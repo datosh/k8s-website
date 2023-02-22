@@ -174,6 +174,16 @@ Tapping the memory or connecting the DRAM modules to another system will yield o
 data. The memory encryption key randomly changes every power cycle. The key is stored
 within the CPU and is not accessible.
 
+Since the enclaves are process isolated, the operating system's libraries are not usable as is and
+therefore SGX enclave SDKs are required to compile programs for SGX. This also implies applications
+need to be designed and implemented to take the trusted/untrusted isolation boundaries into account
+but on the other hand applications get built with very minimal TCB.
+
+To avoid the need to build custom applications and to be able to move to process based confidential
+computing easier, an emerging approach is to use library OSes that help to run native unmodified Linux applications
+inside SGX enclaves. A library OS intercepts all application requests to host OS and processes them securely
+without the application knowing it's running a TEE.
+
 The 3rd generation Xeon CPUs (aka Ice Lake Server - "ICX") and later did switch to using a technology called
 [Total Memory Encryption - Multi-Key](https://www.intel.com/content/www/us/en/developer/articles/news/runtime-encryption-of-memory-with-intel-tme-mk.html)
 (TME-MK) that uses AES-XTS, moving away from the
@@ -218,11 +228,10 @@ all have a huge impact on the expected performance overhead.
 
 Intel SGX-based TEEs are hard to benchmark as [shown](https://arxiv.org/pdf/2205.06415.pdf)
 [by](https://www.ibr.cs.tu-bs.de/users/mahhouk/papers/eurosec2021.pdf)
-[different papers](https://dl.acm.org/doi/fullHtml/10.1145/3533737.3535098). Since enclaves
-are process isolated, the operating system's libraries are not available and additional SDKs
-are required to compile programs for SGX. The chosen SDK as well as the resource requirements
-(especially large memory requirements) have a huge impact on performance. If an application
-is well suited to run inside an enclave a single-digit percentage overhead can be expected.
+[different papers](https://dl.acm.org/doi/fullHtml/10.1145/3533737.3535098). The chosen SDK/library
+OS, the application itself, as well as the resource requirements (especially large memory requirements)
+have a huge impact on performance. If an application is well suited to run inside an enclave a single-digit
+percentage overhead can be expected.
 
 Confidential virtual machines based on AMD SEV-SNP require no changes to the executed program
 and operating system and are a lot easier to benchmark. A
@@ -298,6 +307,15 @@ a single confidential context that is shielded from the underlying cloud infrast
 inside is always encrypted, including at runtime in memory. It shields both the worker and control
 plane nodes. In addition, it already integrates with popular CNCF software such as Cilium for
 secure networking and provides extended CSI drivers to write data securely.
+
+### Occlum and Gramine
+
+[Occlum](https://occlum.io/) and [Gramine](https://gramineproject.io/) are examples of open source
+library OS projects that can be used to run unmodified applications in SGX enclaves. They
+are member projects under the CCC but similar projects and products maintained by companies
+also exist. With these libOS projects existing containerized applications can be
+easily converted into confidential computing enabled containers. Many curated prebuilt
+are also available.
 
 > TODO: Please add any interesting open-source projects in the space we should highlight!
 
