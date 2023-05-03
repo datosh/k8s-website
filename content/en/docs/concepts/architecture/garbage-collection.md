@@ -144,7 +144,7 @@ which you can define:
 
   * `MinAge`: the minimum age at which the kubelet can garbage collect a
     container. Disable by setting to `0`.
-  * `MaxPerPodContainer`: the maximum number of dead containers each Pod pair
+  * `MaxPerPodContainer`: the maximum number of dead containers each Pod 
     can have. Disable by setting to less than `0`.
   * `MaxContainers`: the maximum number of dead containers the cluster can have.
     Disable by setting to less than `0`. 
@@ -180,4 +180,4 @@ configure garbage collection:
 
 * Learn more about [ownership of Kubernetes objects](/docs/concepts/overview/working-with-objects/owners-dependents/).
 * Learn more about Kubernetes [finalizers](/docs/concepts/overview/working-with-objects/finalizers/).
-* Learn about the [TTL controller](/docs/concepts/workloads/controllers/ttlafterfinished/) (beta) that cleans up finished Jobs.
+* Learn about the [TTL controller](/docs/concepts/workloads/controllers/ttlafterfinished/) that cleans up finished Jobs.

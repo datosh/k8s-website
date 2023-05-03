@@ -6,7 +6,8 @@ weight: 50
 
 <!-- overview -->
 Every {{< glossary_tooltip term_id="node" text="node" >}} in a Kubernetes
-cluster runs a [kube-proxy](/docs/reference/command-line-tools-reference/kube-proxy/)
+{{< glossary_tooltip term_id="cluster" text="cluster" >}} runs a
+[kube-proxy](/docs/reference/command-line-tools-reference/kube-proxy/)
 (unless you have deployed your own alternative component in place of `kube-proxy`).
 
 The `kube-proxy` component is responsible for implementing a _virtual IP_
@@ -39,8 +40,10 @@ network proxying service on a computer.  Although the `kube-proxy` executable su
 to use as-is.
 
 <a id="example"></a>
-Some of the details in this reference refer to an example: the backend Pods for a stateless
-image-processing workload, running with three replicas. Those replicas are
+Some of the details in this reference refer to an example: the backend
+{{< glossary_tooltip term_id="pod" text="Pods" >}} for a stateless
+image-processing workloads, running with
+three replicas. Those replicas are
 fungible&mdash;frontends do not care which backend they use.  While the actual Pods that
 compose the backend set may change, the frontend clients should not need to be aware of that,
 nor should they need to keep track of the set of backends themselves.
@@ -61,8 +64,10 @@ Note that the kube-proxy starts up in different modes, which are determined by i
 
 ### `iptables` proxy mode {#proxy-mode-iptables}
 
-In this mode, kube-proxy watches the Kubernetes control plane for the addition and
-removal of Service and EndpointSlice objects. For each Service, it installs
+In this mode, kube-proxy watches the Kubernetes
+{{< glossary_tooltip term_id="control-plane" text="control plane" >}} for the addition and
+removal of Service and EndpointSlice {{< glossary_tooltip term_id="object" text="objects." >}}
+For each Service, it installs
 iptables rules, which capture traffic to the Service's `clusterIP` and `port`,
 and redirect that traffic to one of the Service's
 backend sets. For each endpoint, it installs iptables rules which
@@ -84,7 +89,7 @@ to verify that backend Pods are working OK, so that kube-proxy in iptables mode
 only sees backends that test out as healthy. Doing this means you avoid
 having traffic sent via kube-proxy to a Pod that's known to have failed.
 
-{{< figure src="/images/docs/services-iptables-overview.svg" title="Services overview diagram for iptables proxy" class="diagram-medium" >}}
+{{< figure src="/images/docs/services-iptables-overview.svg" title="Virtual IP mechanism for Services, using iptables mode" class="diagram-medium" >}}
 
 #### Example {#packet-processing-iptables}
 
@@ -126,6 +131,26 @@ iptables:
 ...
 ```
 
+##### Performance optimization for `iptables` mode {#minimize-iptables-restore}
+
+{{< feature-state for_k8s_version="v1.27" state="beta" >}}
+
+In Kubernetes {{< skew currentVersion >}} the kube-proxy defaults to a minimal approach
+to `iptables-restore` operations, only making updates where Services or EndpointSlices have
+actually changed. This is a performance optimization.
+The original implementation updated all the rules for all Services on every sync; this
+sometimes led to performance issues (update lag) in large clusters.
+
+If you are not running kube-proxy from Kubernetes {{< skew currentVersion >}}, check
+the behavior and associated advice for the version that you are actually running.
+
+If you were previously overriding `minSyncPeriod`, you should try
+removing that override and letting kube-proxy use the default value
+(`1s`) or at least a smaller value than you were using before upgrading.
+You can select the legacy behavior by disabling the `MinimizeIPTablesRestore`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
+(you should not need to).
+
 ##### `minSyncPeriod`
 
 The `minSyncPeriod` parameter sets the minimum duration between
@@ -134,11 +159,13 @@ attempts to resynchronize iptables rules with the kernel. If it is
 every time any Service or Endpoint changes. This works fine in very
 small clusters, but it results in a lot of redundant work when lots of
 things change in a small time period. For example, if you have a
-Service backed by a Deployment with 100 pods, and you delete the
+Service backed by a {{< glossary_tooltip term_id="deployment" text="Deployment" >}}
+with 100 pods, and you delete the
 Deployment, then with `minSyncPeriod: 0s`, kube-proxy would end up
-removing the Service's Endpoints from the iptables rules one by one,
+removing the Service's endpoints from the iptables rules one by one,
 for a total of 100 updates. With a larger `minSyncPeriod`, multiple
-Pod deletion events would get aggregated together, so kube-proxy might
+Pod deletion events would get aggregated
+together, so kube-proxy might
 instead end up making, say, 5 updates, each removing 20 endpoints,
 which will be much more efficient in terms of CPU, and result in the
 full set of changes being synchronized faster.
@@ -147,20 +174,19 @@ The larger the value of `minSyncPeriod`, the more work that can be
 aggregated, but the downside is that each individual change may end up
 waiting up to the full `minSyncPeriod` before being processed, meaning
 that the iptables rules spend more time being out-of-sync with the
-current apiserver state.
+current API server state.
 
-The default value of `1s` is a good compromise for small and medium
-clusters. In large clusters, it may be necessary to set it to a larger
-value. (Especially, if kube-proxy's
-`sync_proxy_rules_duration_seconds` metric indicates an average
-time much larger than 1 second, then bumping up `minSyncPeriod` may
-make updates more efficient.)
+The default value of `1s` should work well in most clusters, but in very
+large clusters it may be necessary to set it to a larger value.
+Especially, if kube-proxy's `sync_proxy_rules_duration_seconds` metric
+indicates an average time much larger than 1 second, then bumping up
+`minSyncPeriod` may make updates more efficient.
 
 ##### `syncPeriod`
 
 The `syncPeriod` parameter controls a handful of synchronization
 operations that are not directly related to changes in individual
-Services and Endpoints. In particular, it controls how quickly
+Services and EndpointSlices. In particular, it controls how quickly
 kube-proxy notices if an external component has interfered with
 kube-proxy's iptables rules. In large clusters, kube-proxy also only
 performs certain cleanup operations once every `syncPeriod` to avoid
@@ -170,28 +196,6 @@ For the most part, increasing `syncPeriod` is not expected to have much
 impact on performance, but in the past, it was sometimes useful to set
 it to a very large value (eg, `1h`). This is no longer recommended,
 and is likely to hurt functionality more than it improves performance.
-
-##### Experimental performance improvements {#minimize-iptables-restore}
-
-{{< feature-state for_k8s_version="v1.26" state="alpha" >}}
-
-In Kubernetes 1.26, some new performance improvements were made to the
-iptables proxy mode, but they are not enabled by default (and should
-probably not be enabled in production clusters yet). To try them out,
-enable the `MinimizeIPTablesRestore` [feature
-gate](/docs/reference/command-line-tools-reference/feature-gates/) for
-kube-proxy with `--feature-gates=MinimizeIPTablesRestore=true,…`.
-
-If you enable that feature gate and you were previously overriding
-`minSyncPeriod`, you should try removing that override and letting
-kube-proxy use the default value (`1s`) or at least a smaller value
-than you were using before.
-
-If you notice kube-proxy's
-`sync_proxy_rules_iptables_restore_failures_total` or
-`sync_proxy_rules_iptables_partial_restore_failures_total` metrics
-increasing after enabling this feature, that likely indicates you are
-encountering bugs in the feature and you should file a bug report.
 
 ### IPVS proxy mode {#proxy-mode-ipvs}
 
@@ -229,7 +233,7 @@ kernel modules are available. If the IPVS kernel modules are not detected, then 
 falls back to running in iptables proxy mode.
 {{< /note >}}
 
-{{< figure src="/images/docs/services-ipvs-overview.svg" title="Services overview diagram for IPVS proxy" class="diagram-medium" >}}
+{{< figure src="/images/docs/services-ipvs-overview.svg" title="Virtual IP address mechanism for Services, using IPVS mode" class="diagram-medium" >}}
 
 ## Session affinity
 
@@ -268,13 +272,15 @@ populated in terms of the Service's virtual IP address (and port).
 One of the primary philosophies of Kubernetes is that you should not be
 exposed to situations that could cause your actions to fail through no fault
 of your own. For the design of the Service resource, this means not making
-you choose your own port number if that choice might collide with
+you choose your own IP address if that choice might collide with
 someone else's choice.  That is an isolation failure.
 
-In order to allow you to choose a port number for your Services, we must
+In order to allow you to choose an IP address for your Services, we must
 ensure that no two Services can collide. Kubernetes does that by allocating each
 Service its own IP address from within the `service-cluster-ip-range`
-CIDR range that is configured for the API server.
+CIDR range that is configured for the {{< glossary_tooltip term_id="kube-apiserver" text="API Server" >}}.
+
+#### IP address allocation tracking
 
 To ensure each Service receives a unique IP, an internal allocator atomically
 updates a global allocation map in {{< glossary_tooltip term_id="etcd" >}}
@@ -287,6 +293,42 @@ map (needed to support migrating from older versions of Kubernetes that used
 in-memory locking). Kubernetes also uses controllers to check for invalid
 assignments (e.g. due to administrator intervention) and for cleaning up allocated
 IP addresses that are no longer used by any Services.
+
+{{< feature-state for_k8s_version="v1.27" state="alpha" >}}
+If you enable the `MultiCIDRServiceAllocator`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) and the
+[`networking.k8s.io/v1alpha1` API group](/docs/tasks/administer-cluster/enable-disable-api/),
+the control plane replaces the existing etcd allocator with a new one, using IPAddress
+objects instead of an internal global allocation map.  The ClusterIP address
+associated to each Service will have a referenced IPAddress object.
+
+The background controller is also replaced by a new one to handle the new IPAddress
+objects and the migration from the old allocator model.
+
+One of the main benefits of the new allocator is that it removes the size limitations
+for the `service-cluster-ip-range`, there is no limitations for IPv4 and for IPv6
+users can use masks equal or larger than /64 (previously it was /108).
+
+Users now will be able to inspect the IP addresses assigned to their Services, and
+Kubernetes extensions such as the [Gateway](https://gateway-api.sigs.k8s.io/) API, can use this new
+IPAddress object kind to enhance the Kubernetes networking capabilities, going beyond the limitations of
+the built-in Service API.
+
+```shell
+kubectl get services
+```
+```
+NAME         TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   2001:db8:1:2::1   <none>        443/TCP   3d1h
+```
+```shell
+kubectl get ipaddresses
+```
+```
+NAME              PARENTREF
+2001:db8:1:2::1   services/default/kubernetes
+2001:db8:1:2::a   services/kube-system/kube-dns
+```
 
 #### IP address ranges for Service virtual IP addresses {#service-ip-static-sub-range}
 
@@ -353,7 +395,8 @@ N to 0 replicas of that deployment. In some cases, external load balancers can s
 a node with 0 replicas in between health check probes. Routing traffic to terminating endpoints
 ensures that Node's that are scaling down Pods can gracefully receive and drain traffic to
 those terminating Pods. By the time the Pod completes termination, the external load balancer
-should have seen the node's health check failing and fully removed the node from the backend pool.
+should have seen the node's health check failing and fully removed the node from the backend
+pool.
 
 ## {{% heading "whatsnext" %}}
 

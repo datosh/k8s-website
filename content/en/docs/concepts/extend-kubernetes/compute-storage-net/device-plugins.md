@@ -87,60 +87,65 @@ spec:
 
 The general workflow of a device plugin includes the following steps:
 
-* Initialization. During this phase, the device plugin performs vendor specific
-  initialization and setup to make sure the devices are in a ready state.
+1. Initialization. During this phase, the device plugin performs vendor-specific
+   initialization and setup to make sure the devices are in a ready state.
 
-* The plugin starts a gRPC service, with a Unix socket under host path
-  `/var/lib/kubelet/device-plugins/`, that implements the following interfaces:
+1. The plugin starts a gRPC service, with a Unix socket under the host path
+   `/var/lib/kubelet/device-plugins/`, that implements the following interfaces:
 
-  ```gRPC
-  service DevicePlugin {
-        // GetDevicePluginOptions returns options to be communicated with Device Manager.
-        rpc GetDevicePluginOptions(Empty) returns (DevicePluginOptions) {}
+   ```gRPC
+   service DevicePlugin {
+         // GetDevicePluginOptions returns options to be communicated with Device Manager.
+         rpc GetDevicePluginOptions(Empty) returns (DevicePluginOptions) {}
 
-        // ListAndWatch returns a stream of List of Devices
-        // Whenever a Device state change or a Device disappears, ListAndWatch
-        // returns the new list
-        rpc ListAndWatch(Empty) returns (stream ListAndWatchResponse) {}
+         // ListAndWatch returns a stream of List of Devices
+         // Whenever a Device state change or a Device disappears, ListAndWatch
+         // returns the new list
+         rpc ListAndWatch(Empty) returns (stream ListAndWatchResponse) {}
 
-        // Allocate is called during container creation so that the Device
-        // Plugin can run device specific operations and instruct Kubelet
-        // of the steps to make the Device available in the container
-        rpc Allocate(AllocateRequest) returns (AllocateResponse) {}
+         // Allocate is called during container creation so that the Device
+         // Plugin can run device specific operations and instruct Kubelet
+         // of the steps to make the Device available in the container
+         rpc Allocate(AllocateRequest) returns (AllocateResponse) {}
 
-        // GetPreferredAllocation returns a preferred set of devices to allocate
-        // from a list of available ones. The resulting preferred allocation is not
-        // guaranteed to be the allocation ultimately performed by the
-        // devicemanager. It is only designed to help the devicemanager make a more
-        // informed allocation decision when possible.
-        rpc GetPreferredAllocation(PreferredAllocationRequest) returns (PreferredAllocationResponse) {}
+         // GetPreferredAllocation returns a preferred set of devices to allocate
+         // from a list of available ones. The resulting preferred allocation is not
+         // guaranteed to be the allocation ultimately performed by the
+         // devicemanager. It is only designed to help the devicemanager make a more
+         // informed allocation decision when possible.
+         rpc GetPreferredAllocation(PreferredAllocationRequest) returns (PreferredAllocationResponse) {}
 
-        // PreStartContainer is called, if indicated by Device Plugin during registeration phase,
-        // before each container start. Device plugin can run device specific operations
-        // such as resetting the device before making devices available to the container.
-        rpc PreStartContainer(PreStartContainerRequest) returns (PreStartContainerResponse) {}
-  }
-  ```
+         // PreStartContainer is called, if indicated by Device Plugin during registeration phase,
+         // before each container start. Device plugin can run device specific operations
+         // such as resetting the device before making devices available to the container.
+         rpc PreStartContainer(PreStartContainerRequest) returns (PreStartContainerResponse) {}
+   }
+   ```
 
-  {{< note >}}
-  Plugins are not required to provide useful implementations for
-  `GetPreferredAllocation()` or `PreStartContainer()`. Flags indicating which
-  (if any) of these calls are available should be set in the `DevicePluginOptions`
-  message sent back by a call to `GetDevicePluginOptions()`. The `kubelet` will
-  always call `GetDevicePluginOptions()` to see which optional functions are
-  available, before calling any of them directly.
-  {{< /note >}}
+   {{< note >}}
+   Plugins are not required to provide useful implementations for
+   `GetPreferredAllocation()` or `PreStartContainer()`. Flags indicating
+   the availability of these calls, if any, should be set in the `DevicePluginOptions`
+   message sent back by a call to `GetDevicePluginOptions()`. The `kubelet` will
+   always call `GetDevicePluginOptions()` to see which optional functions are
+   available, before calling any of them directly.
+   {{< /note >}}
 
-* The plugin registers itself with the kubelet through the Unix socket at host
-  path `/var/lib/kubelet/device-plugins/kubelet.sock`.
+1. The plugin registers itself with the kubelet through the Unix socket at host
+   path `/var/lib/kubelet/device-plugins/kubelet.sock`.
 
-* After successfully registering itself, the device plugin runs in serving mode, during which it keeps
-  monitoring device health and reports back to the kubelet upon any device state changes.
-  It is also responsible for serving `Allocate` gRPC requests. During `Allocate`, the device plugin may
-  do device-specific preparation; for example, GPU cleanup or QRNG initialization.
-  If the operations succeed, the device plugin returns an `AllocateResponse` that contains container
-  runtime configurations for accessing the allocated devices. The kubelet passes this information
-  to the container runtime.
+   {{< note >}}
+   The ordering of the workflow is important. A plugin MUST start serving gRPC
+   service before registering itself with kubelet for successful registration.
+   {{< /note >}}
+
+1. After successfully registering itself, the device plugin runs in serving mode, during which it keeps
+   monitoring device health and reports back to the kubelet upon any device state changes.
+   It is also responsible for serving `Allocate` gRPC requests. During `Allocate`, the device plugin may
+   do device-specific preparation; for example, GPU cleanup or QRNG initialization.
+   If the operations succeed, the device plugin returns an `AllocateResponse` that contains container
+   runtime configurations for accessing the allocated devices. The kubelet passes this information
+   to the container runtime.
 
 ### Handling kubelet restarts
 
@@ -208,6 +213,7 @@ for these devices:
 service PodResourcesLister {
     rpc List(ListPodResourcesRequest) returns (ListPodResourcesResponse) {}
     rpc GetAllocatableResources(AllocatableResourcesRequest) returns (AllocatableResourcesResponse) {}
+    rpc Get(GetPodResourcesRequest) returns (GetPodResourcesResponse) {}
 }
 ```
 
@@ -217,6 +223,14 @@ The `List` endpoint provides information on resources of running pods, with deta
 id of exclusively allocated CPUs, device id as it was reported by device plugins and id of
 the NUMA node where these devices are allocated. Also, for NUMA-based machines, it contains the
 information about memory and hugepages reserved for a container.
+
+Starting from Kubernetes v1.27, the `List` enpoint can provide information on resources
+of running pods allocated in `ResourceClaims` by the `DynamicResourceAllocation` API. To enable
+this feature `kubelet` must be started with the following flags:
+
+```
+--feature-gates=DynamicResourceAllocation=true,KubeletPodResourcesDynamiceResources=true
+```
 
 ```gRPC
 // ListPodResourcesResponse is the response returned by List function
@@ -237,6 +251,7 @@ message ContainerResources {
     repeated ContainerDevices devices = 2;
     repeated int64 cpu_ids = 3;
     repeated ContainerMemory memory = 4;
+    repeated DynamicResource dynamic_resources = 5;
 }
 
 // ContainerMemory contains information about memory and hugepages assigned to a container
@@ -261,6 +276,28 @@ message ContainerDevices {
     string resource_name = 1;
     repeated string device_ids = 2;
     TopologyInfo topology = 3;
+}
+
+// DynamicResource contains information about the devices assigned to a container by Dynamic Resource Allocation
+message DynamicResource {
+    string class_name = 1;
+    string claim_name = 2;
+    string claim_namespace = 3;
+    repeated ClaimResource claim_resources = 4;
+}
+
+// ClaimResource contains per-plugin resource information
+message ClaimResource {
+    repeated CDIDevice cdi_devices = 1 [(gogoproto.customname) = "CDIDevices"];
+}
+
+// CDIDevice specifies a CDI device information
+message CDIDevice {
+    // Fully qualified CDI device name
+    // for example: vendor.com/gpu=gpudevice1
+    // see more details in the CDI specification:
+    // https://github.com/container-orchestrated-devices/container-device-interface/blob/main/SPEC.md
+    string name = 1;
 }
 ```
 {{< note >}}
@@ -292,7 +329,6 @@ However, calling `GetAllocatableResources` endpoint is not sufficient in case of
 update and Kubelet needs to be restarted to reflect the correct resource capacity and allocatable.
 {{< /note >}}
 
-
 ```gRPC
 // AllocatableResourcesResponses contains informations about all the devices known by the kubelet
 message AllocatableResourcesResponse {
@@ -313,14 +349,14 @@ Preceding Kubernetes v1.23, to enable this feature `kubelet` must be started wit
 ```
 
 `ContainerDevices` do expose the topology information declaring to which NUMA cells the device is
-affine.  The NUMA cells are identified using a opaque integer ID, which value is consistent to
+affine. The NUMA cells are identified using a opaque integer ID, which value is consistent to
 what device plugins report
 [when they register themselves to the kubelet](/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/#device-plugin-integration-with-the-topology-manager).
 
 The gRPC service is served over a unix socket at `/var/lib/kubelet/pod-resources/kubelet.sock`.
 Monitoring agents for device plugin resources can be deployed as a daemon, or as a DaemonSet.
 The canonical directory `/var/lib/kubelet/pod-resources` requires privileged access, so monitoring
-agents must run in a privileged security context.  If a device monitoring agent is running as a
+agents must run in a privileged security context. If a device monitoring agent is running as a
 DaemonSet, `/var/lib/kubelet/pod-resources` must be mounted as a
 {{< glossary_tooltip term_id="volume" >}} in the device monitoring agent's
 [PodSpec](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#podspec-v1-core).
@@ -328,6 +364,36 @@ DaemonSet, `/var/lib/kubelet/pod-resources` must be mounted as a
 Support for the `PodResourcesLister service` requires `KubeletPodResources`
 [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) to be enabled.
 It is enabled by default starting with Kubernetes 1.15 and is v1 since Kubernetes 1.20.
+
+### `Get` gRPC endpoint {#grpc-endpoint-get}
+
+{{< feature-state state="alpha" for_k8s_version="v1.27" >}}
+
+The `Get` endpoint provides information on resources of a running Pod. It exposes information
+similar to those described in the `List` endpoint. The `Get` endpoint requires `PodName`
+and `PodNamespace` of the running Pod.
+
+```gRPC
+// GetPodResourcesRequest contains information about the pod
+message GetPodResourcesRequest {
+    string pod_name = 1;
+    string pod_namespace = 2;
+}
+```
+
+To enable this feature, you must start your kubelet services with the following flag:
+
+```
+--feature-gates=KubeletPodResourcesGet=true
+```
+
+The `Get` endpoint can provide Pod information related to dynamic resources
+allocated by the dynamic resource allocation API. To enable this feature, you must
+ensure your kubelet services are started with the following flags:
+
+```
+--feature-gates=KubeletPodResourcesGet=true,DynamicResourceAllocation=true,KubeletPodResourcesDynamiceResources=true
+```
 
 ## Device plugin integration with the Topology Manager
 
@@ -355,7 +421,7 @@ resource assignment decisions.
 `TopologyInfo` supports setting a `nodes` field to either `nil` or a list of NUMA nodes. This
 allows the Device Plugin to advertise a device that spans multiple NUMA nodes.
 
-Setting `TopologyInfo` to `nil`  or providing an empty list of NUMA nodes for a given device
+Setting `TopologyInfo` to `nil` or providing an empty list of NUMA nodes for a given device
 indicates that the Device Plugin does not have a NUMA affinity preference for that device.
 
 An example `TopologyInfo` struct populated for a device by a Device Plugin:
@@ -391,4 +457,3 @@ Here are some examples of device plugin implementations:
 * Learn about the [Topology Manager](/docs/tasks/administer-cluster/topology-manager/)
 * Read about using [hardware acceleration for TLS ingress](/blog/2019/04/24/hardware-accelerated-ssl/tls-termination-in-ingress-controllers-using-kubernetes-device-plugins-and-runtimeclass/)
   with Kubernetes
-

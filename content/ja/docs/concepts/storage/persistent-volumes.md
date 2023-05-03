@@ -154,7 +154,7 @@ spec:
       path: /any/path/it/will/be/replaced
   containers:
   - name: pv-recycler
-    image: "k8s.gcr.io/busybox"
+    image: "registry.k8s.io/busybox"
     command: ["/bin/sh", "-c", "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"]
     volumeMounts:
     - name: vol
@@ -386,7 +386,7 @@ PersistentVolumeは、リソースプロバイダーがサポートする方法�
 : ボリュームは多数のNodeで読み取り/書き込みとしてマウントできます
 
 `ReadWriteOncePod`
-: ボリュームは、単一のPodで読み取り/書き込みとしてマウントできます。クラスタ全体で1つのPodのみがそのPVCの読み取りまたは書き込みを行えるようにする場合は、ReadWriteOncePodアクセスモードを使用します。これは、CSIボリュームとKubernetesバージョン1.22以降でのみサポートされます。
+: ボリュームは、単一のPodで読み取り/書き込みとしてマウントできます。クラスター全体で1つのPodのみがそのPVCの読み取りまたは書き込みを行えるようにする場合は、ReadWriteOncePodアクセスモードを使用します。これは、CSIボリュームとKubernetesバージョン1.22以降でのみサポートされます。
 
 これについてはブログ[Introducing Single Pod Access Mode for PersistentVolumes](/blog/2021/09/13/read-write-once-pod-access-mode-alpha/)に詳細が記載されています。
 

@@ -12,10 +12,13 @@ weight: 10
 <!-- overview -->
 
 On-disk files in a container are ephemeral, which presents some problems for
-non-trivial applications when running in containers. One problem
-is the loss of files when a container crashes. The kubelet restarts the container
-but with a clean state. A second problem occurs when sharing files
-between containers running together in a `Pod`.
+non-trivial applications when running in containers. One problem occurs when 
+a container crashes or is stopped. Container state is not saved so all of the 
+files that were created or modified during the lifetime of the container are lost. 
+During a crash, kubelet restarts the container with a clean state. 
+Another problem occurs when multiple containers are running in a `Pod` and 
+need to share files. It can be challenging to setup 
+and access a shared filesystem across all of the containers.
 The Kubernetes {{< glossary_tooltip text="volume" term_id="volume" >}} abstraction
 solves both of these problems.
 Familiarity with [Pods](/docs/concepts/workloads/pods/) is suggested.
@@ -549,7 +552,7 @@ spec:
 
 <!-- maintenance note: OK to remove all mention of glusterfs once the v1.25 release of
 Kubernetes has gone out of support -->
--
+
 Kubernetes {{< skew currentVersion >}} does not include a `glusterfs` volume type.
 
 The GlusterFS in-tree storage driver was deprecated in the Kubernetes v1.25 release
@@ -1168,10 +1171,13 @@ persistent volume:
   secrets are passed.  When you have configured secret data for node-initiated
   volume expansion, the kubelet passes that data via the `NodeExpandVolume()`
   call to the CSI driver. In order to use the `nodeExpandSecretRef` field, your
-  cluster should be running Kubernetes version 1.25 or later and you must enable
+  cluster should be running Kubernetes version 1.25 or later.
+* If you are running Kubernetes Version 1.25 or 1.26, you must enable
   the [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
   named `CSINodeExpandSecret` for each kube-apiserver and for the kubelet on every
-  node. You must also be using a CSI driver that supports or requires secret data during
+  node. In Kubernetes version 1.27 this feature has been enabled by default
+  and no explicit enablement of the feature gate is required.
+  You must also be using a CSI driver that supports or requires secret data during
   node-initiated storage resize operations.
 * `nodePublishSecretRef`: A reference to the secret object containing
   sensitive information to pass to the CSI driver to complete the CSI
@@ -1282,8 +1288,13 @@ in `Container.volumeMounts`. Its values are:
   In similar fashion, no mounts created by the container will be visible on
   the host. This is the default mode.
 
-  This mode is equal to `private` mount propagation as described in the
-  [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
+  This mode is equal to `rprivate` mount propagation as described in
+  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)
+
+  However, the CRI runtime may choose `rslave` mount propagation (i.e.,
+  `HostToContainer`) instead, when `rprivate` propagation is not applicable.
+  cri-dockerd (Docker) is known to choose `rslave` mount propagation when the
+  mount source contains the Docker daemon's root directory (`/var/lib/docker`).
 
 * `HostToContainer` - This volume mount will receive all subsequent mounts
   that are mounted to this volume or any of its subdirectories.
@@ -1296,7 +1307,7 @@ in `Container.volumeMounts`. Its values are:
   propagation will see it.
 
   This mode is equal to `rslave` mount propagation as described in the
-  [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
+  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)
 
 * `Bidirectional` - This volume mount behaves the same the `HostToContainer` mount.
   In addition, all volume mounts created by the container will be propagated
@@ -1306,7 +1317,7 @@ in `Container.volumeMounts`. Its values are:
   a Pod that needs to mount something on the host using a `hostPath` volume.
 
   This mode is equal to `rshared` mount propagation as described in the
-  [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
+  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)
 
   {{< warning >}}
   `Bidirectional` mount propagation can be dangerous. It can damage

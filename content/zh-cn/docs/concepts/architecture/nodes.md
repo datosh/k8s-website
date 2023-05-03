@@ -15,7 +15,7 @@ weight: 10
 <!-- overview -->
 
 <!--
-Kubernetes runs your workload by placing containers into Pods to run on _Nodes_.
+Kubernetes runs your {{< glossary_tooltip text="workload" term_id="workload" >}} by placing containers into Pods to run on _Nodes_.
 A node may be a virtual or physical machine, depending on the cluster. Each node
 is managed by the
 {{< glossary_tooltip text="control plane" term_id="control-plane" >}}
@@ -30,7 +30,8 @@ The [components](/docs/concepts/overview/components/#node-components) on a node 
 {{< glossary_tooltip text="container runtime" term_id="container-runtime" >}}, and the
 {{< glossary_tooltip text="kube-proxy" term_id="kube-proxy" >}}.
 -->
-Kubernetes 通过将容器放入在节点（Node）上运行的 Pod 中来执行你的工作负载。
+Kubernetes 通过将容器放入在节点（Node）上运行的 Pod
+中来执行你的{{< glossary_tooltip text="工作负载" term_id="workload" >}}。
 节点可以是一个虚拟机或者物理机器，取决于所在的集群配置。
 每个节点包含运行 {{< glossary_tooltip text="Pod" term_id="pod" >}} 所需的服务；
 这些节点由{{< glossary_tooltip text="控制面" term_id="control-plane" >}}负责管理。
@@ -157,11 +158,6 @@ For self-registration, the kubelet is started with the following options:
   {{< glossary_tooltip text="taints" term_id="taint" >}} (comma separated `<key>=<value>:<effect>`).
 
   No-op if `register-node` is false.
-- `--node-ip` - IP address of the node.
-- `--node-labels` - {{< glossary_tooltip text="Labels" term_id="label" >}} to add when registering the node
-  in the cluster (see label restrictions enforced by the
-  [NodeRestriction admission plugin](/docs/reference/access-authn-authz/admission-controllers/#noderestriction)).
-- `--node-status-update-frequency` - Specifies how often kubelet posts its node status to the API server.
 -->
 - `--kubeconfig` - 用于向 API 服务器执行身份认证所用的凭据的路径。
 - `--cloud-provider` - 与某{{< glossary_tooltip text="云驱动" term_id="cloud-provider" >}}
@@ -169,7 +165,29 @@ For self-registration, the kubelet is started with the following options:
 - `--register-node` - 自动向 API 服务注册。
 - `--register-with-taints` - 使用所给的{{< glossary_tooltip text="污点" term_id="taint" >}}列表
   （逗号分隔的 `<key>=<value>:<effect>`）注册节点。当 `register-node` 为 false 时无效。
-- `--node-ip` - 节点 IP 地址。
+<!--
+- `--node-ip` - Optional comma-separated list of the IP addresses for the node.
+  You can only specify a single address for each address family.
+  For example, in a single-stack IPv4 cluster, you set this value to be the IPv4 address that the
+  kubelet should use for the node.
+  See [configure IPv4/IPv6 dual stack](/docs/concepts/services-networking/dual-stack/#configure-ipv4-ipv6-dual-stack)
+  for details of running a dual-stack cluster.
+
+  If you don't provide this argument, the kubelet uses the node's default IPv4 address, if any;
+  if the node has no IPv4 addresses then the kubelet uses the node's default IPv6 address.
+-->
+- `--node-ip` - 可选的以英文逗号隔开的节点 IP 地址列表。你只能为每个地址簇指定一个地址。
+  例如在单协议栈 IPv4 集群中，需要将此值设置为 kubelet 应使用的节点 IPv4 地址。
+  参阅[配置 IPv4/IPv6 双协议栈](/zh-cn/docs/concepts/services-networking/dual-stack/#configure-ipv4-ipv6-dual-stack)了解运行双协议栈集群的详情。
+
+  如果你未提供这个参数，kubelet 将使用节点默认的 IPv4 地址（如果有）；
+  如果节点没有 IPv4 地址，则 kubelet 使用节点的默认 IPv6 地址。
+<!--
+- `--node-labels` - {{< glossary_tooltip text="Labels" term_id="label" >}} to add when registering the node
+  in the cluster (see label restrictions enforced by the
+  [NodeRestriction admission plugin](/docs/reference/access-authn-authz/admission-controllers/#noderestriction)).
+- `--node-status-update-frequency` - Specifies how often kubelet posts its node status to the API server.
+-->
 - `--node-labels` - 在集群中注册节点时要添加的{{< glossary_tooltip text="标签" term_id="label" >}}。
   （参见 [NodeRestriction 准入控制插件](/zh-cn/docs/reference/access-authn-authz/admission-controllers/#noderestriction)所实施的标签限制）。
 - `--node-status-update-frequency` - 指定 kubelet 向 API 服务器发送其节点状态的频率。
@@ -372,7 +390,7 @@ Condition，被保护起来的节点在其规约中被标记为不可调度（Un
 In the Kubernetes API, a node's condition is represented as part of the `.status`
 of the Node resource. For example, the following JSON structure describes a healthy node:
 -->
-在 Kubernetes API 中，节点的状况表示节点资源中`.status` 的一部分。
+在 Kubernetes API 中，节点的状况表示节点资源中 `.status` 的一部分。
 例如，以下 JSON 结构描述了一个健康节点：
 
 ```json
@@ -389,65 +407,38 @@ of the Node resource. For example, the following JSON structure describes a heal
 ```
 
 <!--
-If the `status` of the Ready condition remains `Unknown` or `False` for longer
-than the `pod-eviction-timeout` (an argument passed to the
-{{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager"
->}}), then the [node controller](#node-controller) triggers
-{{< glossary_tooltip text="API-initiated eviction" term_id="api-eviction" >}}
-for all Pods assigned to that node. The default eviction timeout duration is
-**five minutes**.
--->
-如果 Ready 状况的 `status` 处于 `Unknown` 或者 `False` 状态的时间超过了
-`pod-eviction-timeout` 值（一个传递给
-{{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}
-的参数），[节点控制器](#node-controller)会对节点上的所有 Pod 触发
-{{< glossary_tooltip text="API 发起的驱逐" term_id="api-eviction" >}}。
-默认的逐出超时时长为 **5 分钟**。
-
-<!--
-In some cases when the node is unreachable, the API server is unable to communicate
-with the kubelet on the node. The decision to delete the pods cannot be communicated to
-the kubelet until communication with the API server is re-established. In the meantime,
-the pods that are scheduled for deletion may continue to run on the partitioned node.
--->
-某些情况下，当节点不可达时，API 服务器不能和其上的 kubelet 通信。
-删除 Pod 的决定不能传达给 kubelet，直到它重新建立和 API 服务器的连接为止。
-与此同时，被计划删除的 Pod 可能会继续在游离的节点上运行。
-
-<!--
-The node controller does not force delete pods until it is confirmed that they have stopped
-running in the cluster. You can see the pods that might be running on an unreachable node as
-being in the `Terminating` or `Unknown` state. In cases where Kubernetes cannot deduce from the
-underlying infrastructure if a node has permanently left a cluster, the cluster administrator
-may need to delete the node object by hand. Deleting the node object from Kubernetes causes
-all the Pod objects running on the node to be deleted from the API server and frees up their
-names.
--->
-节点控制器在确认 Pod 在集群中已经停止运行前，不会强制删除它们。
-你可以看到可能在这些无法访问的节点上运行的 Pod 处于 `Terminating` 或者 `Unknown` 状态。
-如果 kubernetes 不能基于下层基础设施推断出某节点是否已经永久离开了集群，
-集群管理员可能需要手动删除该节点对象。
-从 Kubernetes 删除节点对象将导致 API 服务器删除节点上所有运行的 Pod 对象并释放它们的名字。
-
-<!--
 When problems occur on nodes, the Kubernetes control plane automatically creates
 [taints](/docs/concepts/scheduling-eviction/taint-and-toleration/) that match the conditions
-affecting the node.
-The scheduler takes the Node's taints into consideration when assigning a Pod to a Node.
-Pods can also have {{< glossary_tooltip text="tolerations" term_id="toleration" >}} that let
-them run on a Node even though it has a specific taint.
+affecting the node.  An example of this is when the `status` of the Ready condition
+remains `Unknown` or `False` for longer than the kube-controller-manager's `NodeMonitorGracePeriod`,
+which defaults to 40 seconds.  This will cause either an `node.kubernetes.io/unreachable` taint, for an `Unknown` status,
+or a `node.kubernetes.io/not-ready` taint, for a `False` status, to be added to the Node.
 -->
 当节点上出现问题时，Kubernetes 控制面会自动创建与影响节点的状况对应的
 [污点](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/)。
-调度器在将 Pod 指派到某 Node 时会考虑 Node 上的污点设置。
-Pod 也可以设置{{< glossary_tooltip text="容忍度" term_id="toleration" >}}，
-以便能够在设置了特定污点的 Node 上运行。
+例如当 Ready 状况的 `status` 保持 `Unknown` 或 `False` 的时间长于
+kube-controller-manager 的 `NodeMonitorGracePeriod`（默认为 40 秒）时，
+会造成 `Unknown` 状态下为节点添加 `node.kubernetes.io/unreachable` 污点或在
+`False` 状态下为节点添加 `node.kubernetes.io/not-ready` 污点。
 
 <!--
-See [Taint Nodes by Condition](/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-nodes-by-condition)
+These taints affect pending pods as the scheduler takes the Node's taints into consideration when
+assigning a pod to a Node. Existing pods scheduled to the node may be evicted due to the application
+of `NoExecute` taints. Pods may also have {{< glossary_tooltip text="tolerations" term_id="toleration" >}} that let
+them schedule to and continue running on a Node even though it has a specific taint.
+-->
+这些污点会影响悬决的 Pod，因为调度器在将 Pod 分配到 Node 时会考虑 Node 的污点。
+已调度到节点的当前 Pod 可能会由于施加的 `NoExecute` 污点被驱逐。
+Pod 还可以设置{{< glossary_tooltip text="容忍度" term_id="toleration" >}}，
+使得这些 Pod 仍然能够调度到且继续运行在设置了特定污点的 Node 上。
+
+<!--
+See [Taint Based Evictions](/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-based-evictions) and
+[Taint Nodes by Condition](/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-nodes-by-condition)
 for more details.
 -->
-进一步的细节可参阅[根据状况为节点设置污点](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-nodes-by-condition)。
+进一步的细节可参阅[基于污点的驱逐](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-based-evictions)
+和[根据状况为节点设置污点](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-nodes-by-condition)。
 
 <!--
 ### Capacity and Allocatable {#capacity}
@@ -506,14 +497,14 @@ Kubernetes 节点发送的心跳帮助你的集群确定每个节点的可用性
 
 <!--
 * updates to the `.status` of a Node
-* [Lease](/docs/reference/kubernetes-api/cluster-resources/lease-v1/) objects
+* [Lease](/docs/concepts/architecture/leases/) objects
   within the `kube-node-lease`
   {{< glossary_tooltip term_id="namespace" text="namespace">}}.
   Each Node has an associated Lease object.
 -->
 * 更新节点的 `.status`
 * `kube-node-lease` {{<glossary_tooltip term_id="namespace" text="名字空间">}}中的
-  [Lease（租约）](/zh-cn/docs/reference/kubernetes-api/cluster-resources/lease-v1/)对象。
+  [Lease（租约）](/zh-cn/docs/concepts/architecture/leases/)对象。
   每个节点都有一个关联的 Lease 对象。
 
 <!--
@@ -1029,7 +1020,7 @@ section [Graceful Node Shutdown](#graceful-node-shutdown) for more details.
 
 <!--
 When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods 
-that are part of a StatefulSet will be stuck in terminating status on 
+that are part of a {{< glossary_tooltip text="StatefulSet" term_id="statefulset" >}} will be stuck in terminating status on 
 the shutdown node and cannot move to a new running node. This is because kubelet on 
 the shutdown node is not available to delete the pods so the StatefulSet cannot 
 create a new pod with the same name. If there are volumes used by the pods, the 
@@ -1041,7 +1032,8 @@ created on a different running node. If the original shutdown node does not come
 these pods will be stuck in terminating status on the shutdown node forever.
 -->
 当某节点关闭但 kubelet 的节点关闭管理器未检测到这一事件时，
-在那个已关闭节点上、属于 StatefulSet 的 Pod 将停滞于终止状态，并且不能移动到新的运行节点上。
+在那个已关闭节点上、属于 {{< glossary_tooltip text="StatefulSet" term_id="statefulset" >}}
+的 Pod 将停滞于终止状态，并且不能移动到新的运行节点上。
 这是因为已关闭节点上的 kubelet 已不存在，亦无法删除 Pod，
 因此 StatefulSet 无法创建同名的新 Pod。
 如果 Pod 使用了卷，则 VolumeAttachments 不会从原来的已关闭节点上删除，
@@ -1054,14 +1046,15 @@ these pods will be stuck in terminating status on the shutdown node forever.
 To mitigate the above situation, a  user can manually add the taint `node.kubernetes.io/out-of-service` with either `NoExecute`
 or `NoSchedule` effect to a Node marking it out-of-service. 
 If the `NodeOutOfServiceVolumeDetach`[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-is enabled on `kube-controller-manager`, and a Node is marked out-of-service with this taint, the
+is enabled on {{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}, and a Node is marked out-of-service with this taint, the
 pods on the node will be forcefully deleted if there are no matching tolerations on it and volume
 detach operations for the pods terminating on the node will happen immediately. This allows the
 Pods on the out-of-service node to recover quickly on a different node. 
 -->
 为了缓解上述情况，用户可以手动将具有 `NoExecute` 或 `NoSchedule` 效果的
 `node.kubernetes.io/out-of-service` 污点添加到节点上，标记其无法提供服务。
-如果在 `kube-controller-manager` 上启用了 `NodeOutOfServiceVolumeDetach`
+如果在 {{< glossary_tooltip text="kube-controller-manager" term_id="kube-controller-manager" >}}
+上启用了 `NodeOutOfServiceVolumeDetach`
 [特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)，
 并且节点被通过污点标记为无法提供服务，如果节点 Pod 上没有设置对应的容忍度，
 那么这样的 Pod 将被强制删除，并且该在节点上被终止的 Pod 将立即进行卷分离操作。
@@ -1186,15 +1179,21 @@ see [KEP-2400](https://github.com/kubernetes/enhancements/issues/2400) and its
 ## {{% heading "whatsnext" %}}
 
 <!--
-* Learn about the [components](/docs/concepts/overview/components/#node-components) that make up a node.
-* Read the [API definition for Node](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#node-v1-core).
-* Read the [Node](https://git.k8s.io/design-proposals-archive/architecture/architecture.md#the-kubernetes-node)
-  section of the architecture design document.
-* Read about [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration/).
+Learn more about the following:
+   * [Components](/docs/concepts/overview/components/#node-components) that make up a node.
+   * [API definition for Node](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#node-v1-core).
+   * [Node](https://git.k8s.io/design-proposals-archive/architecture/architecture.md#the-kubernetes-node) section of the architecture design document.
+   * [Taints and Tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration/).
+   * [Node Resource Managers](/docs/concepts/policy/node-resource-managers/).
+   * [Resource Management for Windows nodes](/docs/concepts/configuration/windows-resource-management/).
 -->
-* 进一步了解节点[组件](/zh-cn/docs/concepts/overview/components/#node-components)。
-* 阅读 [Node 的 API 定义](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#node-v1-core)。
-* 阅读架构设计文档中有关
+进一步了解以下资料：
+
+* 构成节点的[组件](/zh-cn/docs/concepts/overview/components/#node-components)。
+* [Node 的 API 定义](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#node-v1-core)。
+* 架构设计文档中有关
   [Node](https://git.k8s.io/design-proposals-archive/architecture/architecture.md#the-kubernetes-node)
   的章节。
-* 了解[污点和容忍度](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/)。
+* [污点和容忍度](/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/)。
+* [节点资源管理器](/zh-cn/docs/concepts/policy/node-resource-managers/)。
+* [Windows 节点的资源管理](/zh-cn/docs/concepts/configuration/windows-resource-management/)。

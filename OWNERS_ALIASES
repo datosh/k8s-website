@@ -32,7 +32,7 @@ aliases:
     - bradtopol
     - divya-mohan0209
     - kbhawkey
-    - krol3
+    - mickeyboxell
     - natalisucks
     - nate-double-u
     - onlydole
@@ -44,6 +44,7 @@ aliases:
     - divya-mohan0209
     - kbhawkey
     - mehabhalodiya
+    - mengjiao-liu
     - natalisucks
     - nate-double-u
     - onlydole
@@ -52,11 +53,17 @@ aliases:
     - shannonxtreme
     - tengqm
   sig-docs-es-owners: # Admins for Spanish content
+    - 92nqb
+    - krol3
     - electrocucaracha
     - raelga
+    - ramrodo
   sig-docs-es-reviews: # PR reviews for Spanish content
+    - 92nqb
+    - krol3
     - electrocucaracha
     - raelga
+    - ramrodo
   sig-docs-fr-owners: # Admins for French content
     - awkif
     - feloy
@@ -104,11 +111,9 @@ aliases:
     - atoato88
     - bells17
     - kakts
-    - makocchi-git
     - ptux
     - t-inu
   sig-docs-ko-owners: # Admins for Korean content
-    - ClaudiaJKang
     - gochist
     - ianychoi
     - jihoon-seo
@@ -116,7 +121,6 @@ aliases:
     - yoonian
     - ysyukr
   sig-docs-ko-reviews: # PR reviews for Korean content
-    - ClaudiaJKang
     - gochist
     - ianychoi
     - jihoon-seo
@@ -140,12 +144,14 @@ aliases:
     - Sea-n
     - tanjunchen
     - tengqm
+    - windsonsea
     - xichengliudui
   sig-docs-zh-reviews: # PR reviews for Chinese content
     - chenrui333
     - chenxuc
     - howieyuen
     # idealhack
+    - kinzhi
     - mengjiao-liu
     - my-git9
     # pigletfly
@@ -160,20 +166,15 @@ aliases:
     - devlware
     - edsoncelio
     - femrtnz
-    - jailton
     - jcjesus
-    - jhonmike
-    - rikatz
     - stormqueen1990
     - yagonobre
   sig-docs-pt-reviews: # PR reviews for Portugese content
     - devlware
     - edsoncelio
     - femrtnz
-    - jailton
     - jcjesus
-    - jhonmike
-    - rikatz
+    - mrerlison
     - stormqueen1990
     - yagonobre
   sig-docs-vi-owners: # Admins for Vietnamese content
@@ -196,9 +197,7 @@ aliases:
     - mfilocha
     - nvtkaszpir
   sig-docs-uk-owners: # Admins for Ukrainian content
-    - anastyakulyk
     - Arhell
-    - butuzov
     - MaxymVlasov
   sig-docs-uk-reviews: # PR reviews for Ukrainian content
     - Arhell

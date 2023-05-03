@@ -1,6 +1,7 @@
 ---
 title: 为 Kubernetes 运行 etcd 集群
 content_type: task
+weight: 270
 ---
 <!--
 reviewers:
@@ -9,6 +10,7 @@ reviewers:
 - jpbetz
 title: Operating etcd clusters for Kubernetes
 content_type: task
+weight: 270
 -->
 
 <!-- overview -->
@@ -42,7 +44,7 @@ content_type: task
   clusters. Therefore, run etcd clusters on dedicated machines or isolated
   environments for [guaranteed resource requirements](https://etcd.io/docs/current/op-guide/hardware/).
 
-* The minimum recommended version of etcd to run in production is `3.2.10+`.
+* The minimum recommended etcd versions to run in production are `3.4.22+` and `3.5.6+`.
 -->
 ## 先决条件    {#prerequisites}
 
@@ -60,7 +62,7 @@ content_type: task
   因此，请在专用机器或隔离环境上运行 etcd 集群，
   以满足[所需资源需求](https://etcd.io/docs/current/op-guide/hardware/)。
 
-* 在生产中运行的 etcd 的最低推荐版本是 `3.2.10+`。
+* 在生产环境中运行的 etcd 最低推荐版本为 `3.4.22+` 和 `3.5.6+`。
 
 <!--
 ## Resource requirements

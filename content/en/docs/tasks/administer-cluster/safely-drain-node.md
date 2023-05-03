@@ -35,6 +35,11 @@ If availability is important for any applications that run or could run on the n
 that you are draining, [configure a PodDisruptionBudgets](/docs/tasks/run-application/configure-pdb/)
 first and then continue following this guide.
 
+It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)
+to your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.
+The default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)
+before the drain can proceed.
+
 ## Use `kubectl drain` to remove a node from service
 
 You can use `kubectl drain` to safely evict all of your pods from a
@@ -66,8 +71,15 @@ kubectl get nodes
 Next, tell Kubernetes to drain the node:
 
 ```shell
-kubectl drain <node name>
+kubectl drain --ignore-daemonsets <node name>
 ```
+
+If there are pods managed by a DaemonSet, you will need to specify
+`--ignore-daemonsets` with `kubectl` to successfully drain the node. The `kubectl drain` subcommand on its own does not actually drain
+a node of its DaemonSet pods:
+the DaemonSet controller (part of the control plane) immediately replaces missing Pods with
+new equivalent Pods. The DaemonSet controller also creates Pods that ignore unschedulable
+taints, which allows the new Pods to launch onto a node that you are draining.
 
 Once it returns (without giving an error), you can power down the node
 (or equivalently, if on a cloud platform, delete the virtual machine backing the node).
