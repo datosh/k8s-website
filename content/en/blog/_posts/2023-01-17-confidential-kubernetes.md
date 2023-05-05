@@ -194,10 +194,6 @@ about SGX on multi-socket platforms can be found in the
 A [list of supported platforms](https://ark.intel.com/content/www/us/en/ark/search/featurefilter.html?productType=873)
 is available from Intel.
 
-However, there are security limitations, such as cache timing attacks, physical attacks,
-untrusted I/O, or malicious microcode patching. Each project has different security requirements
-and needs to decide, if the added security of SGX and its limitations, are sufficient.
-
 SGX is available on
 [Azure](https://azure.microsoft.com/de-de/updates/intel-sgx-based-confidential-computing-vms-now-available-on-azure-dedicated-hosts/),
 [Alibaba Cloud](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-an-sgx-encrypted-computing-environment),
@@ -213,8 +209,8 @@ As with SEV-SNP, guest support for TDX was [merged in Linux Kernel 5.19](https:/
 but hardware support will land with [Sapphire Rapids](https://en.wikipedia.org/wiki/Sapphire_Rapids) during 2023:
 [Alibaba Cloud provides](https://www.alibabacloud.com/help/en/elastic-compute-service/latest/build-a-tdx-confidential-computing-environment)
 invitational preview instances and also
-[Azure has announced](https://azure.microsoft.com/en-us/blog/azure-confidential-computing-on-4th-gen-intel-xeon-scalable-processors-with-intel-tdx/)
-its early access plans.
+[Azure has announced](https://techcommunity.microsoft.com/t5/azure-confidential-computing/preview-introducing-dcesv5-and-ecesv5-series-confidential-vms/ba-p/3800718)
+its TDX preview opportunity.
 
 ## Overhead analysis
 
@@ -246,7 +242,8 @@ similar security guarantees to Confidential Computing but do not require hardwar
 
 Fully (also partially and somewhat) homomorphic encryption allows one to perform
 computations, such as addition or multiplication, on encrypted data. This provides
-the property of encryption in use but does not provide integrity protection or attestation.
+the property of encryption in use but does not provide integrity protection or attestation
+like confidential computing does. Therefore, these two technologies can [complement to each other](https://confidentialcomputing.io/2023/03/29/confidential-computing-and-homomorphic-encryption/).
 
 Zero Knowledge Proofs or Protocols are a privacy-preserving technique (PPT) that
 allows one party to prove facts about their data without revealing anything else about
@@ -317,7 +314,7 @@ library OS projects that can be used to run unmodified applications in SGX encla
 are member projects under the CCC but similar projects and products maintained by companies
 also exist. With these libOS projects existing containerized applications can be
 easily converted into confidential computing enabled containers. Many curated prebuilt
-are also available.
+containers are also available.
 
 ## Where are we today? Vendors, limitations, and FOSS landscape
 
